@@ -2,26 +2,52 @@ import React, { Component } from 'react'
 import NewsItem from './NewsItem'
 
 export class News extends Component {
-    constructor(props) {
-        super(props)
+    constructor() {
+        super()
         this.state = {
             articles: [],
-            loading: false
+            loading: false,
+            page: 1
         }
     }
 
     async componentDidMount() {
-        let url = "https://newsapi.org/v2/top-headlines?country=in&apiKey=2d1614559a9644baab09ab130b144088";
+        console.log(this.state.page);
+        let url = `https://newsapi.org/v2/top-headlines?country=in&apiKey=2d1614559a9644baab09ab130b144088&page=1&pageSize=${this.props.pageSize}`;
         let data = await fetch(url);
         let parsedData = await data.json();
         console.log(parsedData);
-        this.setState({ articles: parsedData.articles});
+        this.setState({ articles: parsedData.articles, totalResults: parsedData.totalResults});
+    }
+
+    handlePrev = async () => {
+        // console.log(this.state.page-1);
+        let url = `https://newsapi.org/v2/top-headlines?country=in&apiKey=2d1614559a9644baab09ab130b144088&page=${this.state.page-1}&pageSize=${this.props.pageSize}`;
+        let data = await fetch(url);
+        let parsedData = await data.json();
+        console.log(parsedData);
+        this.setState({ 
+            page: this.state.page-1,
+            articles: parsedData.articles
+        });
+    }
+
+    handleNext = async () => {
+        // console.log(this.state.page+1);
+        let url = `https://newsapi.org/v2/top-headlines?country=in&apiKey=2d1614559a9644baab09ab130b144088&page=${this.state.page+1}&pageSize=${this.props.pageSize}`;
+        let data = await fetch(url);
+        let parsedData = await data.json();
+        console.log(parsedData);
+        this.setState({ 
+            page: this.state.page+1,
+            articles: parsedData.articles
+        });
     }
 
     render() {
         return (
             <div className="container my-5">
-                <h2>Top Headlines</h2>
+                <h1 className='text-center'>Top Headlines</h1>
                 <div className="row">
                     {this.state.articles.map((ele) => {
                         return <div className="col-md-4 my-4" key={ele.url}>
@@ -30,8 +56,8 @@ export class News extends Component {
                     })}
                 </div>
                 <div className="container d-flex justify-content-between">
-                    <button type="button" className="btn btn-primary">Previous</button>
-                    <button type="button" className="btn btn-primary">Next</button>
+                    <button disabled={this.state.page<=1} type="button" className="btn btn-outline-primary" onClick={this.handlePrev}>&larr; Previous</button>
+                    <button disabled={this.state.page+1 > Math.ceil(this.state.totalResults/this.props.pageSize)} type="button" className="btn btn-outline-primary" onClick={this.handleNext}>Next &rarr;</button>
                 </div>
             </div>
         )
